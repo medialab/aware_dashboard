@@ -13,7 +13,7 @@ if ! command -v docker > /dev/null 2>&1; then
     exit 1
 fi
 
-if ! sudo docker compose version > /dev/null 2>&1; then
+if ! docker compose version > /dev/null 2>&1; then
     echo "  Docker Compose v2 is required but is not available."
     echo "  Update Docker, then rerun ./setup.sh."
     echo ""
@@ -45,9 +45,9 @@ printf 'HOST_UID=%s\nHOST_GID=%s\n' "${SUDO_UID:-$(id -u)}" "${SUDO_GID:-$(id -g
 # from the placement and removes it again, so its presence is the placement.
 compose() {
     if [ -f docker-compose.external-db.yml ]; then
-        sudo docker compose -f docker-compose.yml -f docker-compose.external-db.yml "$@"
+        docker compose -f docker-compose.yml -f docker-compose.external-db.yml "$@"
     else
-        sudo docker compose "$@"
+        docker compose "$@"
     fi
 }
 
@@ -65,14 +65,14 @@ health_checked_services() {
 # answer, and can this study write a row to it. An external one is asked before
 # anything is generated; the bundled one only exists to be asked once it is up.
 verify_database() {
-    python3 setup/verify_database.py --docker-prefix sudo || true
+    python3 setup/verify_database.py || true
 }
 
 # The addresses this deployment publishes, asked about before the containers that
 # need them are built. A port another program holds is a container that never
 # starts, so the run stops here with the port and what holds it named.
 check_ports() {
-    python3 setup/check_ports.py --docker-prefix sudo "$@"
+    python3 setup/check_ports.py "$@"
 }
 
 # A bundled database generates the authority it signs its own certificate with on
@@ -81,15 +81,15 @@ check_ports() {
 # the container and republishes the study carrying it. setup.bat calls the same
 # script, so one deployment is asked one question on either platform.
 publish_database_authority() {
-    python3 setup/publish_authority.py --docker-prefix sudo
+    python3 setup/publish_authority.py
 }
 
 deploy_stack() {
     mkdir -p studies aware-micro-server/cache aware-micro-server/esm
-    python3 setup/deploy_config.py --docker-prefix sudo
+    python3 setup/deploy_config.py
     check_ports
     compose up --build -d
-    python3 setup/init_study_tables.py --docker-prefix sudo
+    python3 setup/init_study_tables.py
     publish_database_authority
     verify_database
 }
@@ -100,7 +100,7 @@ deploy_stack() {
 # deployed and collects nothing, so it is reported rather than exited on --- the
 # stack is up either way, and the wizard shows the same result in the browser.
 verify_ingest() {
-    python3 setup/verify_ingest.py --docker-prefix sudo || true
+    python3 setup/verify_ingest.py || true
 }
 
 print_deployment_links() {
@@ -136,7 +136,7 @@ PY
 start_stack_only() {
     check_ports
     compose up --build -d
-    python3 setup/init_study_tables.py --docker-prefix sudo
+    python3 setup/init_study_tables.py
     # The wizard wrote the study before this database existed, so this is the path a
     # first deployment takes and the one where the authority is missing.
     publish_database_authority
@@ -151,7 +151,7 @@ wait_for_service_redirect() {
 
     i=0
     while [ $i -lt 180 ]; do
-        if sudo docker inspect \
+        if docker inspect \
             -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
             $SERVICES \
             2>/dev/null | awk -v want="$EXPECTED" '
@@ -170,7 +170,7 @@ wait_for_service_redirect() {
     done
 
     echo "  Services are still starting. The setup wizard will remain open."
-    echo "  Run 'sudo docker compose ps' to check status."
+    echo "  Run 'docker compose ps' to check status."
     return 1
 }
 
@@ -204,8 +204,8 @@ if [ "$HAS_ENV" -eq 1 ] && [ "$HAS_MICRO_CONFIG" -eq 1 ]; then
         echo ""
         echo "  All services are starting."
         print_deployment_links
-        echo "  Run 'sudo docker compose ps' to check status."
-        echo "  Run 'sudo docker compose logs -f' to see logs."
+        echo "  Run 'docker compose ps' to check status."
+        echo "  Run 'docker compose logs -f' to see logs."
         echo ""
         exit 0
     fi
@@ -239,7 +239,7 @@ done
 if [ ! -s setup/.wizard_url ]; then
     echo ""
     echo "  ERROR: Could not read wizard URL."
-    echo "  Check logs with: sudo docker compose logs setup-wizard"
+    echo "  Check logs with: docker compose logs setup-wizard"
     echo ""
     exit 1
 fi
@@ -305,6 +305,6 @@ fi
 echo ""
 echo "  All services are starting."
 print_deployment_links
-echo "  Run 'sudo docker compose ps' to check status."
-echo "  Run 'sudo docker compose logs -f' to see logs."
+echo "  Run 'docker compose ps' to check status."
+echo "  Run 'docker compose logs -f' to see logs."
 echo ""
