@@ -108,7 +108,8 @@ def host_for_url(host: str) -> str:
 def build_public_base_url(protocol: str, host: str, port: int) -> str:
     formatted_host = host_for_url(host)
     is_default_port = (protocol == "http" and port == 80) or (protocol == "https" and port == 443)
-    base_url = f"{protocol}://{formatted_host}"
+    #base_url = f"{protocol}://{formatted_host}"
+    base_url = f"https://{formatted_host}"
     if not is_default_port:
         base_url += f":{port}"
     return base_url
@@ -146,13 +147,13 @@ def normalize_public_env(env: dict[str, str]) -> dict[str, str]:
         raise ValueError("PUBLIC_HOST is required")
 
     normalized["PUBLIC_HOST"] = public_host
-    normalized["PROTOCOL"] = protocol
-    normalized["PUBLIC_PORT"] = public_port
+    normalized["PROTOCOL"] = "https"#protocol
+    normalized["PUBLIC_PORT"] = 443#public_port
     return normalized
 
 
 def get_runtime_settings(env: dict[str, str]) -> dict[str, str | int]:
-    protocol = env.get("PROTOCOL", "http")
+    protocol = "https" #env.get("PROTOCOL", "http")
     public_host = strip_ipv6_brackets(env.get("PUBLIC_HOST", "localhost"))
     public_port = int(env.get("PUBLIC_PORT", "443" if protocol == "https" else "80"))
     micro_database_host = str(env.get("MICRO_DATABASE_HOST", "mysql")).strip() or "mysql"

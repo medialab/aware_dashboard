@@ -227,7 +227,7 @@ def broker_config(protocol: str, cert_path: str = "", key_path: str = "") -> str
         "listener 1883 0.0.0.0",
         "",
     ]
-    if uses_tls(protocol):
+    if False: #uses_tls(protocol):
         lines += [
             "# What participants connect to. The client opens any port but 1883 as TLS,",
             "# so this port is what turns encryption on at the phone.",

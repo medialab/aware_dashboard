@@ -688,7 +688,7 @@ def seed_source_secrets(env: dict[str, str]) -> dict:
                     # is off: the client would retry a connection it can never make.
                     # Absent either half, the sensor stays off and says so.
                     server=str(env.get("PUBLIC_HOST", "")).strip(),
-                    protocol=env.get("PROTOCOL", "http"),
+                    protocol="https", #env.get("PROTOCOL", "http"),
                     username=messaging.PARTICIPANT_USER,
                     password=str(env.get("MQTT_PARTICIPANT_PASSWORD", "")).strip(),
                 ),
@@ -783,7 +783,7 @@ def apply_broker(env: dict[str, str], docker_prefix: list[str] | None = None) ->
     password file is built with the broker's own hashing tool, since mosquitto reads
     hashes rather than the passwords themselves.
     """
-    protocol = str(env.get("PROTOCOL", "http")).strip().lower()
+    protocol = "https" #str(env.get("PROTOCOL", "http")).strip().lower()
     port = messaging.port_for(protocol)
 
     MOSQUITTO_DIR.mkdir(parents=True, exist_ok=True)
