@@ -165,9 +165,9 @@ services:
     build:
       context: ./AWARE-Configurator
       args:
-        SERVER_PROTOCOL: ${PROTOCOL:-http}
+        SERVER_PROTOCOL: https
         SERVER_IP: ${PUBLIC_HOST:-localhost}
-        SERVER_PORT: "${PUBLIC_PORT:-80}"
+        SERVER_PORT: 443
         SERVER_BASE_PATH: /configurator
     container_name: aware_configurator
     restart: unless-stopped
@@ -175,8 +175,8 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       PUBLIC_HOST: ${PUBLIC_HOST:-localhost}
-      PUBLIC_PORT: ${PUBLIC_PORT:-80}
-      PROTOCOL: ${PROTOCOL:-http}
+      PUBLIC_PORT: 443
+      PROTOCOL: https
       DJANGO_ALLOWED_HOSTS: "*"
     volumes:
       - .:/project
@@ -205,6 +205,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      PROTOCOL: http
     volumes:
       - ./nginx/index.html:/usr/share/nginx/html/index.html:ro
       - ./nginx/backup.html:/usr/share/nginx/html/backup.html:ro
@@ -242,7 +244,7 @@ services:
       RESEARCHER_USERNAME: ${RESEARCHER_USERNAME:-}
       RESEARCHER_PASSWORD: ${RESEARCHER_PASSWORD:-}
       DASHBOARD_SESSION_SECRET: ${DASHBOARD_SESSION_SECRET:-}
-      PROTOCOL: ${PROTOCOL:-http}
+      PROTOCOL: https
       MQTT_HOST: aware_mqtt
       MQTT_PORT: "1883"
       MQTT_PUBLISHER_USER: ${MQTT_PUBLISHER_USER:-aware_publisher}
@@ -280,6 +282,7 @@ services:
     mem_limit: 256m
     command: ["python", "-m", "app.refresh_counts"]
     environment:
+      PROTOCOL: https
       ANDROID_DATABASE_URL: ${ANDROID_DATABASE_URL:-mysql+aiomysql://aware_analytics:analyticspass@mysql:3306/aware_android}
       IOS_DATABASE_URL: ${IOS_DATABASE_URL:-mysql+aiomysql://aware_analytics:analyticspass@mysql:3306/aware_ios}
       DB_REQUIRE_TLS: ${DB_REQUIRE_TLS:-1}
@@ -311,6 +314,8 @@ services:
       - aware_network
     depends_on:
       - dashboard-api
+    environment:
+      PROTOCOL: https
     healthcheck:
       test: ["CMD-SHELL", "wget -qO/dev/null http://127.0.0.1/dashboard/"]
       interval: 10s
